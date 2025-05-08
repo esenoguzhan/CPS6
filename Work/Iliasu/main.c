@@ -29,41 +29,44 @@ int main(){
     lcd_initialize();
     led_init();
     
+    //clear lcd and reset cursor
+    lcd_clear();
+    lcd_locate(0, 0);
+    
     // display names on lcd in alphabetical order
     display_names_on_lcd();
-    __delay_ms(1500);
-    lcd_clear();
+    lcd_locate(0, 5);
     
+    lcd_printf("Counter: ");
     // infinite loop
     while(1){
-        counter++;
-        lcd_locate(0, 0);
-        lcd_printf("Counter: %d", counter);
+        lcd_locate(9, 5);
+        counter = (counter + 1) % 32;
+        lcd_printf("%2d", counter);
         display_counter_on_leds(counter);
-        __delay_ms(500);
+        __delay_ms(1000);
     }
 }
 
 void display_counter_on_leds(uint8_t count){
     count &= 0x1f;  // &= BV(0) | BV(1) | BV(2) | BV(3) | BV(4);
     
-    if(count & BV(0)) {SETLED(LED1_PORT);} else {CLEARLED(LED1_PORT);}
-    if(count & BV(1)) {SETLED(LED2_PORT);} else {CLEARLED(LED2_PORT);}
+    if(count & BV(4)) {SETLED(LED1_PORT);} else {CLEARLED(LED1_PORT);}
+    if(count & BV(3)) {SETLED(LED2_PORT);} else {CLEARLED(LED2_PORT);}
     if(count & BV(2)) {SETLED(LED3_PORT);} else {CLEARLED(LED3_PORT);}
-    if(count & BV(3)) {SETLED(LED4_PORT);} else {CLEARLED(LED4_PORT);}
-    if(count & BV(4)) {SETLED(LED5_PORT);} else {CLEARLED(LED5_PORT);}
+    if(count & BV(1)) {SETLED(LED4_PORT);} else {CLEARLED(LED4_PORT);}
+    if(count & BV(0)) {SETLED(LED5_PORT);} else {CLEARLED(LED5_PORT);}
 }
 
 void display_names_on_lcd(){
-    lcd_clear();
-    lcd_locate(0, 0);
-    
-    lcd_printf("Iliasu Salaudeen");
+    lcd_printf("Group Members: ");
     lcd_locate(0, 1);
-            
-    lcd_printf("Mert Kulak");
-    lcd_locate(0, 2);
     
-    lcd_printf("Oguzhan Esen");
+    lcd_printf("* Iliasu Salaudeen");
+    lcd_locate(0, 2);
+            
+    lcd_printf("* Mert Kulak");
+    lcd_locate(0, 3);
+    
+    lcd_printf("* Oguzhan Esen");
 }
-
