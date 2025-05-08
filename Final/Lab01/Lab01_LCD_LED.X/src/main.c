@@ -20,7 +20,8 @@
 #define BV(i) (1 << (i))  
 
 // declare counter
-volatile uint8_t counter = 0;
+volatile uint16_t counter = 0;
+volatile uint16_t counter2 = 0;
 void display_counter_on_leds(uint8_t);
 void display_names_on_lcd();
 
@@ -35,16 +36,17 @@ int main(){
     
     // display names on lcd in alphabetical order
     display_names_on_lcd();
-    lcd_locate(0, 5);
+    lcd_locate(0, 7);
     
-    lcd_printf("Counter: ");
+    lcd_printf("Counter = ");
     // infinite loop
     while(1){
-        lcd_locate(9, 5);
-        lcd_printf("%2d", counter);
-        display_counter_on_leds(counter);
-        counter = (counter + 1) % 32;
-        __delay_ms(1000);
+        lcd_locate(9, 7);
+        lcd_printf("%3d", counter);
+        display_counter_on_leds(counter2);
+        counter++;
+        counter2 = counter % 32;
+        __delay_ms(500);
         
     }
 }
