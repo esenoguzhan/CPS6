@@ -1,7 +1,5 @@
 # Ignore NetBeans project metadata
-**/nbproject/
 **/.generated_files/
-**/lib/*.a
 
 # Ignore backup or temp files
 *~
