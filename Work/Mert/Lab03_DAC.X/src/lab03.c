@@ -51,9 +51,44 @@ void dac_initialize()
 	CLEARBIT(DAC_LDAC_TRIS);
     
     // set default state: CS=??, SCK=??, SDI=??, LDAC=??
-
+	SETBIT(DAC_CS_PORT);      
+    CLEARBIT(DAC_SCK_PORT);   
+    CLEARBIT(DAC_SDI_PORT);   
+    SETBIT(DAC_LDAC_PORT);    
 	
     
+}
+
+
+void dac_send_voltage(float voltage)
+{
+
+    unsigned int data = (unsigned int)((voltage / 4.096) * 4096);
+    data &= 0x0FFF;
+    unsigned int command = 0x3000 | data; 
+
+
+    CLEARBIT(DAC_CS_PORT);
+
+    for (int i = 15; i >= 0; i--) {
+        if ((command >> i) & 0x01) {
+            SETBIT(DAC_SDI_PORT);
+        } else {
+            CLEARBIT(DAC_SDI_PORT);
+        }
+        Nop();
+        SETBIT(DAC_SCK_PORT);
+        Nop();
+        CLEARBIT(DAC_SCK_PORT);
+    }
+
+    SETBIT(DAC_CS_PORT);
+    CLEARBIT(DAC_SDI_PORT);
+    Nop();
+
+    CLEARBIT(DAC_LDAC_PORT);
+    Nop(); Nop();
+    SETBIT(DAC_LDAC_PORT);
 }
 
 /*
@@ -90,33 +125,26 @@ void timer_initialize()
 	IEC0bits.T1IE = 1; // Enable Timer1 interrupt
 	T1CONbits.TON = 1; // Start Timer
 
-	OSCCONbits.LPOSCEN = 1
-	T2CONbits.TON = 0; // Disable Timer
-	T2CONbits.TCS = 1; // Select external clock
-	T2CONbits.TSYNC = 0; // Disable Synchronization
-	T2CONbits.TCKPS = 0b00; // Select 1:1 Prescaler
-	TMR2 = 0x00; // Clear timer register
-	PR2 = FCY; // Load the period value
-	IPC0bits.T2IP = 0x03; // Set Timer1 Interrupt Priority Level
-	IFS0bits.T2IF = 0; // Clear Timer1 Interrupt Flag
-	IEC0bits.T2IE = 1; // Enable Timer1 interrupt
-	T2CONbits.TON = 1; // Start Timer
-
-
-	OSCCONbits.LPOSCEN = 1
-	T3CONbits.TON = 0; // Disable Timer
-	T3CONbits.TCS = 1; // Select external clock
-	T3CONbits.TSYNC = 0; // Disable Synchronization
-	T3CONbits.TCKPS = 0b00; // Select 1:1 Prescaler
-	TMR3 = 0x00; // Clear timer register
-	PR3 = 2 * FCY_EXT; // Load the period value
-	IPC0bits.T3IP = 0x05; // Set Timer1 Interrupt Priority Level
-	IFS0bits.T3IF = 0; // Clear Timer1 Interrupt Flag
-	IEC0bits.T3IE = 1; // Enable Timer1 interrupt
-	T3CONbits.TON = 1; // Start Timer
 }
 
 // interrupt service routine?
+
+volatile uint8_t delay_done = 0;
+
+void __attribute__((__interrupt__, __auto_psv__)) _T1Interrupt(void)
+{
+    delay_done = 1;
+    CLEARBIT(IFS0bits.T1IF);
+}
+
+void delay_ms(unsigned int ms)
+{
+    delay_done = 0;
+    unsigned int period = (32768 * ms) / 1000;
+    PR1 = period;
+    TMR1 = 0;
+    while (!delay_done);
+}
 
 /*
  * main loop
@@ -132,5 +160,17 @@ void main_loop()
     while(TRUE)
     {
         // main loop code
+        dac_send_voltage(1.0);
+        delay_ms(500);
+
+        dac_send_voltage(2.5);
+        delay_ms(2000);
+
+        dac_send_voltage(3.5);
+        delay_ms(1000);
+
+        TOGGLELED(LED1_PORT);
     }
 }
+
+
