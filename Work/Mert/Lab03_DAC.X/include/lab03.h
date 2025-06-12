@@ -4,6 +4,12 @@
 // initializes the MCP4822 communication for task 1
 void dac_initialize();
 
+void dac_send_voltage(float voltage);
+
+void delay_ms(unsigned int ms);
+
+void main_loop();
+
 // initialized the timer for task 2
 void timer_initialize();
 

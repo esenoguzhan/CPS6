@@ -69,8 +69,9 @@ void dac_send_voltage(float voltage)
 
 
     CLEARBIT(DAC_CS_PORT);
+    int i;
 
-    for (int i = 15; i >= 0; i--) {
+    for (i = 15; i >= 0; i--) {
         if ((command >> i) & 0x01) {
             SETBIT(DAC_SDI_PORT);
         } else {
@@ -113,7 +114,7 @@ void timer_initialize()
     // lower 8 bits of the register OSCCON)
     __builtin_write_OSCCONL(OSCCONL | 2);
     // configure timer
-	OSCCONbits.LPOSCEN = 1
+	OSCCONbits.LPOSCEN = 1;
 	T1CONbits.TON = 0; // Disable Timer
 	T1CONbits.TCS = 1; // Select external clock
 	T1CONbits.TSYNC = 0; // Disable Synchronization
@@ -124,20 +125,95 @@ void timer_initialize()
 	IFS0bits.T1IF = 0; // Clear Timer1 Interrupt Flag
 	IEC0bits.T1IE = 1; // Enable Timer1 interrupt
 	T1CONbits.TON = 1; // Start Timer
-
+    
+    /*
+     * T2CONbits.TON = 0; // Disable Timer
+	T2CONbits.TCS = 1; // Select external clock
+	T2CONbits.TSYNC = 0; // Disable Synchronization
+	T2CONbits.TCKPS = 0b00; // Select 1:1 Prescaler
+	TMR2 = 0x00; // Clear timer register
+	PR2 = FCY_EXT * 2 ; // Load the period value
+	IPC0bits.T2IP = 0x03; // Set Timer1 Interrupt Priority Level
+	IFS0bits.T2IF = 0; // Clear Timer1 Interrupt Flag
+	IEC0bits.T2IE = 1; // Enable Timer1 interrupt
+	T2CONbits.TON = 1; // Start Timer
+    
+    T2CONbits.TON = 0; // Disable Timer
+	T2CONbits.TCS = 1; // Select external clock
+	T2CONbits.TSYNC = 0; // Disable Synchronization
+	T2CONbits.TCKPS = 0b00; // Select 1:1 Prescaler
+	TMR2 = 0x00; // Clear timer register
+	PR2 = FCY_EXT ; // Load the period value
+	IPC0bits.T2IP = 0x02; // Set Timer1 Interrupt Priority Level
+	IFS0bits.T2IF = 0; // Clear Timer1 Interrupt Flag
+	IEC0bits.T2IE = 1; // Enable Timer1 interrupt
+	T2CONbits.TON = 1; // Start Timer
+     */
 }
 
 // interrupt service routine?
 
-volatile uint8_t delay_done = 0;
 
-void __attribute__((__interrupt__, __auto_psv__)) _T1Interrupt(void)
-{
+/*
+ volatile uint8_t delay_done = 0;
+  
+ void __attribute__((__interrupt__, __auto_psv__)) _T1Interrupt(void)
+{   
     delay_done = 1;
     CLEARBIT(IFS0bits.T1IF);
 }
 
-void delay_ms(unsigned int ms)
+void __attribute__((__interrupt__, __auto_psv__)) _T2Interrupt(void)
+{
+    delay_done = 1;
+    CLEARBIT(IFS0bits.T2IF);
+}
+
+void __attribute__((__interrupt__, __auto_psv__)) _T3Interrupt(void)
+{ 
+    delay_done = 1;
+    CLEARBIT(IFS0bits.T3IF);
+}
+ void delay_ms()
+{
+    delay_done = 0;
+    while (!delay_done);
+}
+
+void main_loop()
+{
+    // print assignment information
+    lcd_printf("Lab03: DAC");
+    lcd_locate(0, 1);
+    lcd_printf("Group: 06");
+    
+    while(TRUE)
+    {
+        // main loop code
+        dac_send_voltage(1.0);
+        delay_ms();
+
+        dac_send_voltage(2.5);
+        delay_ms();
+
+        dac_send_voltage(3.5);
+        delay_ms();
+
+        TOGGLELED(LED1_PORT);
+    }
+}
+
+ */
+
+volatile uint8_t delay_done = 0;
+
+void __attribute__((__interrupt__, __auto_psv__)) _T1Interrupt(void)
+{   
+    delay_done =  1;
+    CLEARBIT(IFS0bits.T1IF);
+}
+
+ void delay_ms(unsigned int ms)
 {
     delay_done = 0;
     unsigned int period = (32768 * ms) / 1000;
@@ -145,7 +221,7 @@ void delay_ms(unsigned int ms)
     TMR1 = 0;
     while (!delay_done);
 }
-
+ 
 /*
  * main loop
  */
