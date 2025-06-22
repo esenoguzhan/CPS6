@@ -101,6 +101,13 @@ void __attribute__((__interrupt__, auto_psv)) _T1Interrupt(void)
 
 void timer_initialize()
 {
+    // Enable RTC Oscillator -> this effectively does OSCCONbits.LPOSCEN = 1
+    // but the OSCCON register is lock protected. That means you would have to 
+    // write a specific sequence of numbers to the register OSCCONL. After that 
+    // the write access to OSCCONL will be enabled for one instruction cycle.
+    // The function __builtin_write_OSCCONL(val) does the unlocking sequence and
+    // afterwards writes the value val to that register. (OSCCONL represents the
+    // lower 8 bits of the register OSCCON)
     __builtin_write_OSCCONL(OSCCONL | 2); // Enable RTC oscillator
     
     T1CON = 0; // Clear Timer1 configuration
