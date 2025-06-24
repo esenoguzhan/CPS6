@@ -83,4 +83,39 @@ P1_orig(2:end-1) = 2*P1_orig(2:end-1);
 % Filtered signal FFT
 Y_filt = fft(filtered_signal - mean_filt);
 P2_filt = abs(Y_filt/N);
-P1_filt =
+P1_filt = P2_filt(1:N/2+1);
+P1_filt(2:end-1) = 2*P1_filt(2:end-1);
+
+% 4.2.3) Plot spectra up to 500 Hz
+max_freq = 500;
+idx = f <= max_freq;
+
+figure(2)
+plot(f(idx), P1_orig(idx), 'b')
+hold on
+plot(f(idx), P1_filt(idx), 'r')
+title('Single-Sided Amplitude Spectrum')
+xlabel('Frequency (Hz)')
+ylabel('|P1(f)|')
+legend('Original', 'Filtered')
+grid on
+hold off
+
+fprintf('4) Done.\n')
+
+%% 5. Frequency Identification
+fprintf('5) Start.\n')
+
+% Find signal frequency
+[signal_freq, amplitude] = find_signal_frequency(f, P1_filt);
+fprintf('Detected signal frequency: %.2f Hz\n', signal_freq);
+fprintf('Signal amplitude: %.4f\n', amplitude);
+
+fprintf('5) Done.\n')
+
+%% Function Definition
+function [freq, amp] = find_signal_frequency(f, P1)
+    % Find the peak in the spectrum (ignoring DC component)
+    [amp, idx] = max(P1(2:end));
+    freq = f(idx+1); % +1 because we skipped DC component
+end
