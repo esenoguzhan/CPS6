@@ -72,11 +72,14 @@ void set_servo(char axis, uint16_t duty_us) {
 
 void init_touchscreen() {
     CLEARBIT(AD1CON1bits.ADON);
-
+    
+    SETBIT(TRISBbits.TRISB15);
+    SETBIT(TRISBbits.TRISB9);
+    
     SETBIT(TRISEbits.TRISE1);
     SETBIT(TRISEbits.TRISE2);
     SETBIT(TRISEbits.TRISE3);
-
+    
 
     AD1PCFGHbits.PCFG20 = 1; // RE8 as digital (for buttons)
     AD1PCFGLbits.PCFG15 = 0; // AN15 as analog input (X)
@@ -98,18 +101,33 @@ void init_touchscreen() {
 void set_touchscreen_axis(char axis) {
     if (axis == 'X') {
         CLEARBIT(TRISEbits.TRISE1);
+        Nop();
         CLEARBIT(TRISEbits.TRISE2);
+        Nop();
+
         CLEARBIT(TRISEbits.TRISE3);
+        Nop();
+
         CLEARBIT(PORTEbits.RE1);
+        Nop();
+
         SETBIT(PORTEbits.RE2);
+        Nop();
         SETBIT(PORTEbits.RE3);
+        Nop();
     } else if (axis == 'Y') {
         CLEARBIT(TRISEbits.TRISE1);
+        Nop();
         CLEARBIT(TRISEbits.TRISE2);
+        Nop();
         CLEARBIT(TRISEbits.TRISE3);
+        Nop();
         SETBIT(PORTEbits.RE1);
+        Nop();
         CLEARBIT(PORTEbits.RE2);
+        Nop();
         CLEARBIT(PORTEbits.RE3);
+        Nop();
     }
     __delay_ms(10);
 }
@@ -185,10 +203,8 @@ void main_loop() {
     
     
     while (1) {
-        move_ball_to_corner(corner);
-        //set_servo("X", 3820);
-
-        __delay_ms(1000);
+        
+                
         set_touchscreen_axis('X');
         uint16_t x = read_touchscreen();
 
@@ -196,9 +212,14 @@ void main_loop() {
         uint16_t y = read_touchscreen();
 
         print_position(x, y);
+        
+        move_ball_to_corner(corner);
+        //set_servo("X", 3820);
+
+
        
 
-        __delay_ms(4000);
+        __delay_ms(3000);
         corner = (corner + 1) % 4;
         lcd_locate(0, 4);
         lcd_printf("corner: %d", corner);
