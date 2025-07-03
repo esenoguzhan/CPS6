@@ -10,4 +10,4 @@ void init_touchscreen();
 void set_touchscreen_axis(char axis);
 uint16_t read_touchscreen();
 
-#endif
+#endif /* LAB05_H */
